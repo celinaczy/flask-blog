@@ -58,7 +58,7 @@ class PostForm(FlaskForm):
     title = StringField('Blog Post Title', validators=[DataRequired()])
     subtitle = StringField('Subtitle', validators=[DataRequired()])
     author = StringField('Author', validators=[DataRequired()])
-    image_url = StringField('Image URL', validators=[DataRequired(), URL()])
+    img_url = StringField('Image URL', validators=[DataRequired(), URL()])
     body = CKEditorField("Blog Content", validators=[DataRequired()])
     submit = SubmitField('Submit Post')
 
@@ -84,6 +84,18 @@ def show_post(post_id):
 @app.route('/add_new_post', methods=['GET', 'POST'])
 def add_new_post():
     form = PostForm()
+    if form.validate_on_submit():
+        new_post = BlogPost(
+            title=request.form['title'],
+            subtitle=request.form['subtitle'],
+            author=request.form['author'],
+            img_url=request.form['img_url'],
+            body=request.form['body'],
+            date=date.today().strftime("%B %d, %Y")
+        )
+        db.session.add(new_post)
+        db.session.commit()
+        return redirect(url_for('get_all_posts'))
     return render_template('make-post.html', form=form)
 
 # TODO: edit_post() to change an existing blog post
