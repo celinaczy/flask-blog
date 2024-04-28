@@ -71,7 +71,6 @@ def get_all_posts():
     posts = db.session.execute(db.select(BlogPost)).scalars().all()
     return render_template("index.html", all_posts=posts)
 
-# Add a route so that you can click on individual posts.
 @app.route('/post/<int:post_id>')
 def show_post(post_id):
     print(post_id)
@@ -80,7 +79,7 @@ def show_post(post_id):
     return render_template("post.html", post=requested_post)
 
 
-# TODO: add_new_post() to create a new blog post
+# create a new blog post
 @app.route('/add_new_post', methods=['GET', 'POST'])
 def add_new_post():
     form = PostForm()
@@ -99,6 +98,26 @@ def add_new_post():
     return render_template('make-post.html', form=form)
 
 # TODO: edit_post() to change an existing blog post
+@app.route('/edit-post/<post_id>', methods=['GET', 'POST'])
+def edit_post(post_id):
+    post = db.get_or_404(BlogPost, post_id)
+    edit_form = PostForm(
+        title=post.title,
+        subtitle=post.subtitle,
+        img_url=post.img_url,
+        author=post.author,
+        body=post.body
+    )
+    if edit_form.validate_on_submit():
+        post.title = request.form['title']
+        post.subtitle = request.form['subtitle']
+        post.author = request.form['author']
+        post.img_url = request.form['img_url']
+        post.body = request.form['body']
+        db.session.commit()
+        return redirect(url_for('show_post', post_id=post_id))
+
+    return render_template('make-post.html', post_id=post_id, form=edit_form)
 
 # TODO: delete_post() to remove a blog post from the database
 
