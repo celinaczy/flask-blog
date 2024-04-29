@@ -123,7 +123,9 @@ def login():
 
 @app.route('/logout')
 def logout():
-    return redirect(url_for('get_all_posts'))
+    logout_user()
+    return redirect(url_for('get_all_posts', logged_in=current_user.is_authenticated))
+
 @app.route('/')
 def get_all_posts():
     # Query the database for all the posts. Convert the data to a python list.
