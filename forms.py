@@ -13,13 +13,13 @@ class PostForm(FlaskForm):
     submit = SubmitField("Submit Post")
 
 
-# TODO: Create a RegisterForm to register new users
+# register new users
 class RegisterForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
     password = StringField("Password", validators=[DataRequired()])
     submit = SubmitField("Register")
 
-# TODO: Create a LoginForm to login existing users
+# login existing users
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
     password = StringField("Password", validators=[DataRequired()])

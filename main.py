@@ -1,14 +1,13 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from flask_ckeditor import CKEditor
 from datetime import date
-from werkzeug.security import generate_password_hash
-from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
-
-
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_manager
+from flask_login import LoginManager
 # Import forms from the forms.py
 from forms import PostForm, RegisterForm, LoginForm
 
@@ -33,6 +32,7 @@ ckeditor = CKEditor(app)
 Bootstrap5(app)
 
 
+
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
@@ -41,7 +41,12 @@ class Base(DeclarativeBase):
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'  # Specify the login view for unauthorized users
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # CONFIGURE TABLE
 class BlogPost(db.Model):
@@ -54,15 +59,15 @@ class BlogPost(db.Model):
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
 
 
-class User(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    username: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    hash: Mapped[str] = mapped_column(String(250), nullable=False)
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    hash = db.Column(db.String(128), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
 
 
 with app.app_context():
     db.create_all()
-
 
 # ------------------- FUNCTIONS  -----------------------
 # TODO: Use Werkzeug to hash the user's password when creating a new user.
@@ -81,16 +86,31 @@ def register():
         )
         db.session.add(new_user)
         db.session.commit()
+        login_user(new_user)
         return redirect(url_for('get_all_posts'))
 
     return render_template("register.html", form=form)
 
 
 # TODO: Retrieve a user from the database based on their email.
-@app.route('/login')
+@app.route('/login', methods=['GET','POST'])
 def login():
     form = LoginForm()
-
+    if form.validate_on_submit():
+        username = request.form.get('username')
+        password = request.form.get('password')
+        result = db.session.execute(db.select(User).where(User.username == username))
+        user = result.scalar()
+        if not user:
+            flash("That username does not exist, please try again.")
+            return redirect(url_for('login'))
+        elif not check_password_hash(user.hash, password):
+            flash('Password incorrect, please try again.')
+            return redirect(url_for('login'))
+        else:
+            login_user(user)
+            print(current_user.is_authenticated)
+            return redirect(url_for('get_all_posts'))
     return render_template("login.html", form=form)
 
 
