@@ -3,14 +3,12 @@ from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired, URL
-from flask_ckeditor import CKEditor, CKEditorField
+from flask_ckeditor import CKEditor
 from datetime import date
 
 # Import forms from the forms.py
-from forms import PostForm
+from forms import PostForm, RegisterForm, LoginForm
+
 
 '''
 Make sure the required packages are installed: 
@@ -55,15 +53,47 @@ class BlogPost(db.Model):
 
 class User(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     hash: Mapped[str] = mapped_column(String(250), nullable=False)
 
 
 with app.app_context():
     db.create_all()
 
-# ------------------- FUNCTIONS  -----------------------
 
+# ------------------- FUNCTIONS  -----------------------
+# TODO: Use Werkzeug to hash the user's password when creating a new user.
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        hash_and_salted_password = generate_password_hash(
+            request.form.get('password'),
+            method='pbkdf2:sha256',
+            salt_length=8
+        )
+        new_user = User(
+            username=request.form.get('username'),
+            hash=hash_and_salted_password
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('get_all_posts'))
+
+    return render_template("register.html", form=form)
+
+
+# TODO: Retrieve a user from the database based on their email.
+@app.route('/login')
+def login():
+    form = LoginForm()
+
+    return render_template("login.html")
+
+
+@app.route('/logout')
+def logout():
+    return redirect(url_for('get_all_posts'))
 @app.route('/')
 def get_all_posts():
     # Query the database for all the posts. Convert the data to a python list.
