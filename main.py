@@ -80,7 +80,7 @@ def register():
         user = result.scalar()
         if user:
             flash(message="This username already exists. Log in or choose a different username")
-            return redirect(url_for('login'))
+            return redirect(url_for('register'))
         else:
             hash_and_salted_password = generate_password_hash(
                 request.form.get('password'),
