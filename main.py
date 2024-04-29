@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, abort
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -8,6 +8,8 @@ from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_manager
 from flask_login import LoginManager
+from functools import wraps
+
 # Import forms from the forms.py
 from forms import PostForm, RegisterForm, LoginForm
 
@@ -47,6 +49,15 @@ login_manager.login_view = 'login'  # Specify the login view for unauthorized us
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+def admin_only(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.id != 1:
+            abort(403)  # Forbidden
+        return f(*args, **kwargs)
+    return decorated_function
 
 # CONFIGURE TABLE
 class BlogPost(db.Model):
@@ -142,6 +153,7 @@ def show_post(post_id):
 
 # create a new blog post
 @app.route('/add_new_post', methods=['GET', 'POST'])
+@admin_only
 def add_new_post():
     form = PostForm()
     if form.validate_on_submit():
@@ -160,6 +172,7 @@ def add_new_post():
 
 # change an existing blog post
 @app.route('/edit-post/<post_id>', methods=['GET', 'POST'])
+@admin_only
 def edit_post(post_id):
     post = db.get_or_404(BlogPost, post_id)
     edit_form = PostForm(
@@ -182,6 +195,7 @@ def edit_post(post_id):
 
 # remove a blog post from the database
 @app.route('/delete/<post_id>')
+@admin_only
 def delete(post_id):
     post = db.get_or_404(BlogPost, post_id)
     db.session.delete(post)
