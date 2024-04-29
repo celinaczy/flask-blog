@@ -13,7 +13,6 @@ from functools import wraps
 # Import forms from the forms.py
 from forms import PostForm, RegisterForm, LoginForm, CommentForm
 
-
 '''
 Make sure the required packages are installed: 
 Open the Terminal in PyCharm (bottom left). 
@@ -59,8 +58,8 @@ def admin_only(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# CONFIGURE TABLE
 
+# ----------------- DB TABLES ----------------------
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -164,11 +163,15 @@ def get_all_posts():
 
 @app.route('/post/<int:post_id>', methods=['GET', 'POST'])
 def show_post(post_id):
-    print(post_id)
     # Retrieve a BlogPost from the database based on the post_id
     requested_post = db.get_or_404(BlogPost, post_id)
     form = CommentForm()
+    result = db.session.execute(db.select(Comment).where(Comment.post_id == post_id))
+    all_comments = result.scalars().all()
     if form.validate_on_submit():
+        if not current_user.is_authenticated:
+            flash("You need to login or register to comment.")
+            return redirect(url_for("login"))
         new_comment = Comment(
             author=current_user,
             parent_post=requested_post,
@@ -176,7 +179,7 @@ def show_post(post_id):
         )
         db.session.add(new_comment)
         db.session.commit()
-    return render_template("post.html", post=requested_post, form=form)
+    return render_template("post.html", post=requested_post, form=form, comments=all_comments)
 
 
 # create a new blog post
