@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_manager
 from flask_login import LoginManager
 from functools import wraps
+from flask_gravatar import Gravatar
 
 # Import forms from the forms.py
 from forms import PostForm, RegisterForm, LoginForm, CommentForm
@@ -45,6 +46,17 @@ db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  # Specify the login view for unauthorized users
 
+# For adding profile images to the comment section
+gravatar = Gravatar(app,
+                    size=100,
+                    rating='g',
+                    default='retro',
+                    force_default=False,
+                    force_lower=False,
+                    use_ssl=False,
+                    base_url=None)
+
+# -------------- decorators ---------------
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
