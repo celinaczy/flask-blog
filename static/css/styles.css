@@ -10796,3 +10796,8 @@ header.masthead .post-heading .meta a {
     font-size: 2.25rem;
   }
 }
+/* Flash Message Styling */
+.flash {
+  color: #ee6f57;
+  text-align: center;
+}
