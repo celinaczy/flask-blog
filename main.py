@@ -68,6 +68,7 @@ class User(UserMixin, db.Model):
     hash = db.Column(db.String(128), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     posts = relationship("BlogPost", back_populates="author")
+    comments = relationship("Comment", back_populates="author")
 
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
@@ -81,6 +82,17 @@ class BlogPost(db.Model):
     # create reference to the User object. The "posts" are a property of User class
     author = relationship("User", back_populates="posts")
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
+    comments = relationship("Comment", back_populates="parent_post")
+
+
+class Comment(db.Model):
+    __tablename__ = "comments"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    author_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("users.id"))
+    author = relationship("User", back_populates="comments")
+    post_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("blog_posts.id"))
+    parent_post = relationship("BlogPost", back_populates="comments")
+    text: Mapped[str] = mapped_column(String(400), nullable=False)
 
 
 with app.app_context():
