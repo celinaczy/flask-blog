@@ -5,6 +5,9 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from flask_ckeditor import CKEditor
 from datetime import date
+from werkzeug.security import generate_password_hash
+from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
+
 
 # Import forms from the forms.py
 from forms import PostForm, RegisterForm, LoginForm
@@ -88,7 +91,7 @@ def register():
 def login():
     form = LoginForm()
 
-    return render_template("login.html")
+    return render_template("login.html", form=form)
 
 
 @app.route('/logout')
