@@ -21,13 +21,25 @@ include "header.html" %}
 <main class="mb-4">
   <div class="container">
     <div class="row">
-      <!-- TODO: add a flash message here for users registering twice -->
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      {% for message in messages %}
+      <p class="flash">{{ message }}</p>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
       <div class="col-lg-8 col-md-10 mx-auto">
-        <!--TODO: render login form here-->
         {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
       </div>
     </div>
   </div>
 </main>
-
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('submit-btn').addEventListener('click', function() {
+      this.disabled = true; // Disable the button to prevent multiple submissions
+      this.form.submit();   // Submit the form
+    });
+  });
+</script>
 {% include "footer.html" %} {% endblock %}

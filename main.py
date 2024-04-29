@@ -70,29 +70,36 @@ with app.app_context():
     db.create_all()
 
 # ------------------- FUNCTIONS  -----------------------
-# TODO: Use Werkzeug to hash the user's password when creating a new user.
+# Use Werkzeug to hash the user's password when creating a new user
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
+    username = request.form.get('username')
     if form.validate_on_submit():
-        hash_and_salted_password = generate_password_hash(
-            request.form.get('password'),
-            method='pbkdf2:sha256',
-            salt_length=8
-        )
-        new_user = User(
-            username=request.form.get('username'),
-            hash=hash_and_salted_password
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        login_user(new_user)
-        return redirect(url_for('get_all_posts'))
+        result = db.session.execute(db.select(User).where(User.username == username))
+        user = result.scalar()
+        if user:
+            flash(message="This username already exists. Log in or choose a different username")
+            return redirect(url_for('login'))
+        else:
+            hash_and_salted_password = generate_password_hash(
+                request.form.get('password'),
+                method='pbkdf2:sha256',
+                salt_length=8
+            )
+            new_user = User(
+                username=username,
+                hash=hash_and_salted_password
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            login_user(new_user)
+            return redirect(url_for('get_all_posts'))
 
     return render_template("register.html", form=form)
 
 
-# TODO: Retrieve a user from the database based on their email.
+# Retrieve a user from the database based on their username.
 @app.route('/login', methods=['GET','POST'])
 def login():
     form = LoginForm()
