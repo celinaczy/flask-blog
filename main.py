@@ -94,9 +94,9 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user)
-            return redirect(url_for('get_all_posts'))
+            return redirect(url_for('get_all_posts', logged_in=current_user.is_authenticated))
 
-    return render_template("register.html", form=form)
+    return render_template("register.html", form=form, logged_in=current_user.is_authenticated)
 
 
 # Retrieve a user from the database based on their username.
@@ -117,8 +117,8 @@ def login():
         else:
             login_user(user)
             print(current_user.is_authenticated)
-            return redirect(url_for('get_all_posts'))
-    return render_template("login.html", form=form)
+            return redirect(url_for('get_all_posts', logged_in=current_user.is_authenticated))
+    return render_template("login.html", form=form, logged_in=current_user.is_authenticated)
 
 
 @app.route('/logout')
@@ -128,14 +128,14 @@ def logout():
 def get_all_posts():
     # Query the database for all the posts. Convert the data to a python list.
     posts = db.session.execute(db.select(BlogPost)).scalars().all()
-    return render_template("index.html", all_posts=posts)
+    return render_template("index.html", all_posts=posts, logged_in=current_user.is_authenticated)
 
 @app.route('/post/<int:post_id>')
 def show_post(post_id):
     print(post_id)
     # Retrieve a BlogPost from the database based on the post_id
     requested_post = db.get_or_404(BlogPost, post_id)
-    return render_template("post.html", post=requested_post)
+    return render_template("post.html", post=requested_post, logged_in=current_user.is_authenticated)
 
 
 # create a new blog post
