@@ -53,9 +53,14 @@ class BlogPost(db.Model):
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
 
 
+class User(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    hash: Mapped[str] = mapped_column(String(250), nullable=False)
+
+
 with app.app_context():
     db.create_all()
-
 
 # ------------------- FUNCTIONS  -----------------------
 
