@@ -168,6 +168,14 @@ def show_post(post_id):
     # Retrieve a BlogPost from the database based on the post_id
     requested_post = db.get_or_404(BlogPost, post_id)
     form = CommentForm()
+    if form.validate_on_submit():
+        new_comment = Comment(
+            author=current_user,
+            parent_post=requested_post,
+            text=request.form.get("comment")
+        )
+        db.session.add(new_comment)
+        db.session.commit()
     return render_template("post.html", post=requested_post, form=form)
 
 
