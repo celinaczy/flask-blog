@@ -11,7 +11,7 @@ from flask_login import LoginManager
 from functools import wraps
 
 # Import forms from the forms.py
-from forms import PostForm, RegisterForm, LoginForm
+from forms import PostForm, RegisterForm, LoginForm, CommentForm
 
 
 '''
@@ -149,12 +149,14 @@ def get_all_posts():
     posts = db.session.execute(db.select(BlogPost)).scalars().all()
     return render_template("index.html", all_posts=posts)
 
-@app.route('/post/<int:post_id>')
+
+@app.route('/post/<int:post_id>', methods=['GET', 'POST'])
 def show_post(post_id):
     print(post_id)
     # Retrieve a BlogPost from the database based on the post_id
     requested_post = db.get_or_404(BlogPost, post_id)
-    return render_template("post.html", post=requested_post)
+    form = CommentForm()
+    return render_template("post.html", post=requested_post, form=form)
 
 
 # create a new blog post
