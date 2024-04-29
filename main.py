@@ -9,6 +9,9 @@ from wtforms.validators import DataRequired, URL
 from flask_ckeditor import CKEditor, CKEditorField
 from datetime import date
 
+# Import forms from the forms.py
+from forms import PostForm
+
 '''
 Make sure the required packages are installed: 
 Open the Terminal in PyCharm (bottom left). 
@@ -52,15 +55,6 @@ class BlogPost(db.Model):
 
 with app.app_context():
     db.create_all()
-
-# ------------------- CREATE FORMS -----------------------
-class PostForm(FlaskForm):
-    title = StringField('Blog Post Title', validators=[DataRequired()])
-    subtitle = StringField('Subtitle', validators=[DataRequired()])
-    author = StringField('Author', validators=[DataRequired()])
-    img_url = StringField('Image URL', validators=[DataRequired(), URL()])
-    body = CKEditorField("Blog Content", validators=[DataRequired()])
-    submit = SubmitField('Submit Post')
 
 
 # ------------------- FUNCTIONS  -----------------------
