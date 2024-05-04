@@ -10,6 +10,7 @@ from flask_login import UserMixin, login_user, LoginManager, current_user, logou
 from flask_login import LoginManager
 from functools import wraps
 from flask_gravatar import Gravatar
+import os
 
 # Import forms from the forms.py
 from forms import PostForm, RegisterForm, LoginForm, CommentForm
@@ -28,7 +29,7 @@ This will install the packages from the requirements.txt for this project.
 '''
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 app.config['CKEDITOR_PKG_TYPE'] = 'basic'
 ckeditor = CKEditor(app)
 Bootstrap5(app)
@@ -258,4 +259,4 @@ def contact():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5003)
+    app.run(debug=False)
