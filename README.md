@@ -2,7 +2,7 @@
 
 This is a Flask-based blogging application. Users can register, log in, and comment on posts. Admin privileges are available to manage posts: add, edit and delete them.
 
-## InstallationI
+## Installation
 
 * Clone the repository to your local machine.
 * Ensure that Python 3.x is installed.
